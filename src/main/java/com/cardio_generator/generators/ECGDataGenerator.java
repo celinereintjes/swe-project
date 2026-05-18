@@ -6,7 +6,7 @@ import com.cardio_generator.outputs.OutputStrategy;
 
 public class ECGDataGenerator implements PatientDataGenerator {
     private static final Random random = new Random();
-    private double[] lastEcgValues;
+    private final  double[] lastEcgValues;
     private static final double PI = Math.PI;
 
     public ECGDataGenerator(int patientCount) {
@@ -20,14 +20,9 @@ public class ECGDataGenerator implements PatientDataGenerator {
     @Override
     public void generate(int patientId, OutputStrategy outputStrategy) {
         // TODO Check how realistic this data is and make it more realistic if necessary
-        try {
-            double ecgValue = simulateEcgWaveform(patientId, lastEcgValues[patientId]);
-            outputStrategy.output(patientId, System.currentTimeMillis(), "ECG", Double.toString(ecgValue));
-            lastEcgValues[patientId] = ecgValue;
-        } catch (Exception e) {
-            System.err.println("An error occurred while generating ECG data for patient " + patientId);
-            e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
-        }
+        double ecgValue = simulateEcgWaveform(patientId, lastEcgValues[patientId]);
+        outputStrategy.output(patientId, System.currentTimeMillis(), "ECG", Double.toString(ecgValue));
+        lastEcgValues[patientId] = ecgValue;
     }
 
     private double simulateEcgWaveform(int patientId, double lastEcgValue) {
@@ -35,12 +30,14 @@ public class ECGDataGenerator implements PatientDataGenerator {
         double hr = 60.0 + random.nextDouble() * 20.0; // Simulate heart rate variability between 60 and 80 bpm
         double t = System.currentTimeMillis() / 1000.0; // Use system time to simulate continuous time
         double ecgFrequency = hr / 60.0; // Convert heart rate to Hz
+        double phaseShift = patientId * 0.15; // Unique phase for each patient
 
         // Simulate different components of the ECG signal
-        double pWave = 0.1 * Math.sin(2 * PI * ecgFrequency * t);
-        double qrsComplex = 0.5 * Math.sin(2 * PI * 3 * ecgFrequency * t); // QRS is higher frequency
-        double tWave = 0.2 * Math.sin(2 * PI * 2 * ecgFrequency * t + PI / 4); // T wave is offset
+        double pWave = 0.1 * Math.sin(2 * PI * ecgFrequency * t + phaseShift);
+        double qrsComplex = 0.5 * Math.sin(2 * PI * 3 * ecgFrequency * t + phaseShift);
+        double tWave = 0.2 * Math.sin(2 * PI * 2 * ecgFrequency * t + PI / 4 + phaseShift);
+        double smoothing = 0.05 * lastEcgValue;
 
-        return pWave + qrsComplex + tWave + random.nextDouble() * 0.05; // Add small noise
+        return pWave + qrsComplex + tWave + smoothing + random.nextDouble() * 0.05; // Add small noise
     }
 }

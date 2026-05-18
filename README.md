@@ -65,3 +65,24 @@ java -jar target/cardio_generator-1.0-SNAPSHOT.jar --patient-count 100 --output 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 Student ID: i6440191
+
+## Submission artifacts
+
+- Renamed executable JAR (as required by the assignment): `bin/cardio-simulator-i6440191.jar`
+- The original packaged JAR is also available in `target/cardio_generator-1.0-SNAPSHOT.jar`.
+
+Please see the repository commit history for the commits that implement style fixes and Javadoc updates to `AlertGenerator.java` and `FileOutputStrategy.java`.
+
+## Design Patterns (Part 4 additions)
+
+- **Factory**: Alert factories (`BloodPressureAlertFactory`, `ECGAlertFactory`, `BloodOxygenAlertFactory`) centralize creation of `Alert` instances.
+- **Decorator**: `PriorityAlertDecorator` and `RepeatedAlertDecorator` augment alerts without changing core `Alert` implementations.
+- **Strategy**: `AlertStrategy` implementations (e.g., `BloodPressureStrategy`, `HypoxicHypotensionStrategy`) encapsulate alert-detection algorithms.
+
+## UML
+
+The `uml/` directory contains architecture diagrams used for the assignment.
+
+## WebSocket client
+
+A `WebSocketDataReader` and `WebSocketClientImpl` are provided under `com.data_management`. Use `WebSocketDataReader.connectWebSocket("ws://host:port", dataStorage)` to stream simulator messages into `DataStorage`.

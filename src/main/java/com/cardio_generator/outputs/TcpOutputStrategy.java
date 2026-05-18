@@ -5,9 +5,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TcpOutputStrategy implements OutputStrategy {
 
+    private static final Logger LOGGER = Logger.getLogger(TcpOutputStrategy.class.getName());
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private PrintWriter out;
@@ -24,11 +27,11 @@ public class TcpOutputStrategy implements OutputStrategy {
                     out = new PrintWriter(clientSocket.getOutputStream(), true);
                     System.out.println("Client connected: " + clientSocket.getInetAddress());
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Unable to accept TCP client connection", e);
                 }
             });
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Unable to start TCP output server on port " + port, e);
         }
     }
 

@@ -26,20 +26,15 @@ public class BloodLevelsDataGenerator implements PatientDataGenerator {
 
     @Override
     public void generate(int patientId, OutputStrategy outputStrategy) {
-        try {
-            // Generate values around the baseline for realism
-            double cholesterol = baselineCholesterol[patientId] + (random.nextDouble() - 0.5) * 10; // Small variation
-            double whiteCells = baselineWhiteCells[patientId] + (random.nextDouble() - 0.5) * 1; // Small variation
-            double redCells = baselineRedCells[patientId] + (random.nextDouble() - 0.5) * 0.2; // Small variation
+        // Generate values around the baseline for realism
+        double cholesterol = baselineCholesterol[patientId] + (random.nextDouble() - 0.5) * 10; // Small variation
+        double whiteCells = baselineWhiteCells[patientId] + (random.nextDouble() - 0.5) * 1; // Small variation
+        double redCells = baselineRedCells[patientId] + (random.nextDouble() - 0.5) * 0.2; // Small variation
 
-            // Output the generated values
-            outputStrategy.output(patientId, System.currentTimeMillis(), "Cholesterol", Double.toString(cholesterol));
-            outputStrategy.output(patientId, System.currentTimeMillis(), "WhiteBloodCells",
-                    Double.toString(whiteCells));
-            outputStrategy.output(patientId, System.currentTimeMillis(), "RedBloodCells", Double.toString(redCells));
-        } catch (Exception e) {
-            System.err.println("An error occurred while generating blood levels data for patient " + patientId);
-            e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
-        }
+        // Output the generated values
+        outputStrategy.output(patientId, System.currentTimeMillis(), "Cholesterol", Double.toString(cholesterol));
+        outputStrategy.output(patientId, System.currentTimeMillis(), "WhiteBloodCells",
+                Double.toString(whiteCells));
+        outputStrategy.output(patientId, System.currentTimeMillis(), "RedBloodCells", Double.toString(redCells));
     }
 }

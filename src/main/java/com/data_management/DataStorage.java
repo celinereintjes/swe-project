@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.alerts.AlertGenerator;
 
 /**
@@ -13,14 +14,25 @@ import com.alerts.AlertGenerator;
  * patient IDs.
  */
 public class DataStorage {
-    private Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+    private final Map<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
+
+    private DataStorage() {
+        this.patientMap = new HashMap<>();
+    }
+
+    private static class Holder {
+        private static final DataStorage INSTANCE = new DataStorage();
+    }
+
+    public static DataStorage getInstance() {
+        return Holder.INSTANCE;
+    }
 
     /**
-     * Constructs a new instance of DataStorage, initializing the underlying storage
-     * structure.
+     * Clears all data from the storage. Intended for use in unit tests.
      */
-    public DataStorage() {
-        this.patientMap = new HashMap<>();
+    public void clear() {
+        patientMap.clear();
     }
 
     /**
@@ -83,13 +95,7 @@ public class DataStorage {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        // DataReader is not defined in this scope, should be initialized appropriately.
-        // DataReader reader = new SomeDataReaderImplementation("path/to/data");
-        DataStorage storage = new DataStorage();
-
-        // Assuming the reader has been properly initialized and can read data into the
-        // storage
-        // reader.readData(storage);
+        DataStorage storage = DataStorage.getInstance();
 
         // Example of using DataStorage to retrieve and print records for a patient
         List<PatientRecord> records = storage.getRecords(1, 1700000000000L, 1800000000000L);

@@ -1,5 +1,10 @@
 package com.alerts;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.logging.Logger;
+
 import com.data_management.DataStorage;
 import com.data_management.Patient;
 
@@ -10,43 +15,76 @@ import com.data_management.Patient;
  * it against specific health criteria.
  */
 public class AlertGenerator {
-    private DataStorage dataStorage;
+    private final DataStorage dataStorage;
+    private final AlertHandler handler;
+    private final List<AlertStrategy> strategies = new ArrayList<>();
 
-    /**
-     * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
-     * The {@code DataStorage} is used to retrieve patient data that this class
-     * will monitor and evaluate.
-     *
-     * @param dataStorage the data storage system that provides access to patient
-     *                    data
-     */
     public AlertGenerator(DataStorage dataStorage) {
-        this.dataStorage = dataStorage;
+        this(dataStorage, null);
+    }
+
+    public AlertGenerator(DataStorage dataStorage, AlertHandler handler) {
+        this(dataStorage, handler, null);
     }
 
     /**
-     * Evaluates the specified patient's data to determine if any alert conditions
-     * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert}
-     * method. This method should define the specific conditions under which an
-     * alert
-     * will be triggered.
-     *
-     * @param patient the patient data to evaluate for alert conditions
+     * Constructs an AlertGenerator with an explicit strategy list (useful for tests)
+     */
+    public AlertGenerator(DataStorage dataStorage, AlertHandler handler, List<AlertStrategy> strategies) {
+        this.dataStorage = Objects.requireNonNull(dataStorage);
+        this.handler = handler;
+        if (strategies != null && !strategies.isEmpty()) {
+            this.strategies.addAll(strategies);
+        } else {
+            // default strategies
+            this.strategies.add(new BloodPressureStrategy());
+            this.strategies.add(new HeartRateStrategy());
+            this.strategies.add(new OxygenSaturationStrategy());
+            // combined strategy for simultaneous low saturation + low systolic BP
+            this.strategies.add(new HypoxicHypotensionStrategy());
+        }
+    }
+
+    public void addStrategy(AlertStrategy s) {
+        strategies.add(s);
+    }
+
+    /**
+     * Evaluate patient data by delegating to registered strategies.
      */
     public void evaluateData(Patient patient) {
-        // Implementation goes here
+        for (AlertStrategy s : strategies) {
+            s.checkAlert(patient, this);
+        }
     }
 
     /**
-     * Triggers an alert for the monitoring system. This method can be extended to
-     * notify medical staff, log the alert, or perform other actions. The method
-     * currently assumes that the alert information is fully formed when passed as
-     * an argument.
-     *
-     * @param alert the alert object containing details about the alert condition
+     * Evaluate alert conditions for all patients stored in the configured data storage.
+     */
+    public void evaluateAll() {
+        for (Patient patient : dataStorage.getAllPatients()) {
+            evaluateData(patient);
+        }
+    }
+
+    /**
+     * Default trigger action: log the alert. In a fuller system this would notify staff or persist alerts.
      */
     private void triggerAlert(Alert alert) {
-        // Implementation might involve logging the alert or notifying staff
+        Logger.getLogger(AlertGenerator.class.getName()).warning(
+                String.format("ALERT patient=%s condition=%s timestamp=%d", alert.getPatientId(), alert.getCondition(), alert.getTimestamp()));
+        if (handler != null) {
+            handler.handle(alert);
+        }
     }
+
+    /**
+     * Helper for strategies to create alerts through a factory and trigger them.
+     */
+    public void triggerViaFactory(AlertFactory factory, String patientId, String condition) {
+        Alert a = factory.createAlert(patientId, condition, System.currentTimeMillis());
+        triggerAlert(a);
+    }
+
+    
 }

@@ -1,13 +1,16 @@
 package com.cardio_generator.outputs;
 
+import java.net.InetSocketAddress;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
 
-import java.net.InetSocketAddress;
-
 public class WebSocketOutputStrategy implements OutputStrategy {
 
-    private WebSocketServer server;
+    private static final Logger LOGGER = Logger.getLogger(WebSocketOutputStrategy.class.getName());
+    private final WebSocketServer server;
 
     public WebSocketOutputStrategy(int port) {
         server = new SimpleWebSocketServer(new InetSocketAddress(port));
@@ -47,7 +50,7 @@ public class WebSocketOutputStrategy implements OutputStrategy {
 
         @Override
         public void onError(WebSocket conn, Exception ex) {
-            ex.printStackTrace();
+            LOGGER.log(Level.SEVERE, "WebSocket server error", ex);
         }
 
         @Override
